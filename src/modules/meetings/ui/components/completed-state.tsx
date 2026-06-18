@@ -8,13 +8,21 @@ import { useSuspenseQuery, useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { TranscriptChat } from "./transcript-chat";
+import { MeetingExportMenu } from "./meeting-export-menu";
 
 interface Props {
   meetingId: string;
+  meetingName: string;
+  meetingDate: string | Date;
   summary: string | null;
 }
 
-export const CompletedState = ({ meetingId, summary }: Props) => {
+export const CompletedState = ({
+  meetingId,
+  meetingName,
+  meetingDate,
+  summary,
+}: Props) => {
   const trpc = useTRPC();
   const { data: transcript } = useSuspenseQuery(
     trpc.meetings.getTranscript.queryOptions({ id: meetingId }),
@@ -44,6 +52,14 @@ export const CompletedState = ({ meetingId, summary }: Props) => {
         </TabsList>
 
         <TabsContent value="summary">
+          <div className="flex justify-end mb-3">
+            <MeetingExportMenu
+              meetingName={meetingName}
+              meetingDate={meetingDate}
+              summary={summary}
+              transcript={transcript}
+            />
+          </div>
           {summary ? (
             <div className="text-sm leading-relaxed">
               <ReactMarkdown
