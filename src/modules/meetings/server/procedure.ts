@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { nanoid } from "nanoid";
 import { db } from "@/db";
 import { agents, meetings, messages, transcriptChat, user } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
@@ -47,6 +48,44 @@ export const meetingsRouter = createTRPCRouter({
 
     return token;
   }),
+
+  // Generate (or rotate) the unguessable public share token for a meeting the
+  // caller owns. Rotating invalidates any previously shared link.
+  share: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const shareToken = nanoid(32);
+      const [updated] = await db
+        .update(meetings)
+        .set({ shareToken })
+        .where(
+          and(eq(meetings.id, input.id), eq(meetings.userId, ctx.auth.user.id)),
+        )
+        .returning({ shareToken: meetings.shareToken });
+      if (!updated) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
+      }
+      return { shareToken: updated.shareToken };
+    }),
+
+  // Revoke public sharing for an owned meeting: clears the token so the public
+  // link 404s.
+  revokeShare: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [updated] = await db
+        .update(meetings)
+        .set({ shareToken: null })
+        .where(
+          and(eq(meetings.id, input.id), eq(meetings.userId, ctx.auth.user.id)),
+        )
+        .returning({ id: meetings.id });
+      if (!updated) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Meeting not found" });
+      }
+      return { success: true };
+    }),
+
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {

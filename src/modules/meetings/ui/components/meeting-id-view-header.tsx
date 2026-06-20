@@ -24,12 +24,14 @@ interface Props {
   meetingName: string;
   onEdit: () => void;
   onRemove: () => void;
+  actions?: React.ReactNode;
 }
 export const MeetingIdViewHeader = ({
   meetingId,
   meetingName,
   onEdit,
   onRemove,
+  actions,
 }: Props) => {
   return (
     <div className="flex items-center justify-between">
@@ -54,8 +56,10 @@ export const MeetingIdViewHeader = ({
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      {/* without modal = {false}, the dialog that this dropdown opens cause the website to get stuck, to be precise unclickable */}
-      <DropdownMenu modal={false}>
+      <div className="flex items-center gap-2">
+        {actions}
+        {/* without modal = {false}, the dialog that this dropdown opens cause the website to get stuck, to be precise unclickable */}
+        <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
             <MoreVerticalIcon />
@@ -70,8 +74,9 @@ export const MeetingIdViewHeader = ({
             <TrashIcon className="size-4 text-black" />
             Delete
           </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 };

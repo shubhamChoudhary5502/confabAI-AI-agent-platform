@@ -14,6 +14,7 @@ import { ActiveState } from "../components/active-state";
 import { CancelledState } from "../components/cancelled-state";
 import { ProcessingState } from "../components/processing-state";
 import { CompletedState } from "../components/completed-state";
+import { MeetingShareButton } from "../components/meeting-share-button";
 
 interface Props {
   meetingId: string;
@@ -90,6 +91,12 @@ export const MeetingIdView = ({ meetingId }: Props) => {
           meetingName={data.name}
           onEdit={() => setUpdateMeetingDialogOpen(true)}
           onRemove={handleRemoveMeeting}
+          actions={
+            <MeetingShareButton
+              meetingId={meetingId}
+              initialShareToken={data.shareToken ?? null}
+            />
+          }
         />
         {isCancelled && (
          <CancelledState />
