@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { pgTable, text, timestamp, boolean, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, pgEnum, integer } from "drizzle-orm/pg-core";
 
 export const userTier = pgEnum("user_tier", ["free", "premium"]);
 
@@ -101,6 +101,8 @@ export const meetings = pgTable("meetings", {
   transcriptUrl: text("transcript_url"),
   recordingUrl: text("recording_url"),
   summary: text("summary"),
+  // Nullable, unguessable token for public read-only sharing. Null = not shared.
+  shareToken: text("share_token").unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -116,6 +118,7 @@ export const messages = pgTable("messages", {
     .references(() => meetings.id, { onDelete: "cascade" }),
   role: messageRole("role").notNull(),
   content: text("content").notNull(),
+  latencyMs: integer("latency_ms"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
